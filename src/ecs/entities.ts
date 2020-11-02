@@ -71,6 +71,6 @@ export interface BiEntityPredicate {
 /**
  * Wrapped action function
  */
-export interface EntityAction<T extends Entity = Entity> {
-    (entity: T, signal?: AbortSignal): Promise<any>;
+export interface EntityAction {
+    (signal?: AbortSignal): Promise<any>;
 }

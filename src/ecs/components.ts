@@ -1,6 +1,11 @@
 import { Entity } from "./entities";
 
 /**
+ * Type alias for a numeric pair
+ */
+export type Point = [x: number, y: number];
+
+/**
  * Sprite position wrapper
  */
 export class EntityPosition {
@@ -29,6 +34,15 @@ export class EntityPosition {
 }
 
 /**
+ * Sprite image data
+ */
+export interface EntityImage {
+    tile: string;
+    fg?: string;
+    bg?: string;
+}
+
+/**
  * Target position vector
  */
 export interface EntityMovement {
@@ -39,10 +53,33 @@ export interface EntityMovement {
 }
 
 /**
- * Sprite image data
+ * Abstract movement error
  */
-export interface EntityImage {
-    tile: string;
-    fg?: string;
-    bg?: string;
+export abstract class MovementError extends Error {
+}
+
+/**
+ * Collision error
+ */
+export class CollisionError extends MovementError {
+    constructor(readonly object: Entity, message: string = "Collision error") {
+        super(message);
+    }
+}
+
+/**
+ * Ongoing/uninterruptible movement error
+ */
+export class OngoingError extends MovementError {
+    constructor(readonly movement: EntityMovement, message: string = "Movement in progress") {
+        super(message);
+    }
+}
+
+/**
+ * Movement constructor
+ */
+export interface MovementBuilder {
+    singleton(entity: Entity, alpha: number, x: number, y: number): Promise<EntityMovement>;
+    composite(entity: Entity, alpha: number, input: Iterable<Point>, signal?: AbortSignal): Promise<EntityMovement | undefined>;
 }

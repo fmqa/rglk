@@ -1,13 +1,8 @@
 import * as EventEmitter from "eventemitter3";
 import Scheduler from "rot-js/lib/scheduler/scheduler";
-import { EntityMovement, EntityPosition } from "./components";
+import { CollisionError, EntityMovement, EntityPosition, MovementBuilder, OngoingError, Point } from "./components";
 import { Entity, EntityEvent, EntityPredicate } from "./entities";
 import { EntityGrid } from "./grid";
-
-/**
- * Type alias for a numeric pair
- */
-export type Point = [x: number, y: number];
 
 export interface Updatable {
     /**
@@ -93,33 +88,9 @@ export abstract class System implements Updatable {
 export type SpatialEvent = 'collided' | 'moved';
 
 /**
- * Abstract movement error
- */
-export abstract class MovementError extends Error {
-}
-
-/**
- * Collision error
- */
-export class CollisionError extends MovementError {
-    constructor(readonly object: Entity, message: string = "Collision error") {
-        super(message);
-    }
-}
-
-/**
- * Ongoing/uninterruptible movement error
- */
-export class OngoingError extends MovementError {
-    constructor(readonly movement: EntityMovement, message: string = "Movement in progress") {
-        super(message);
-    }
-}
-
-/**
  * Spatial movement/query system
  */
-export class SpatialSystem extends System {
+export class SpatialSystem extends System implements MovementBuilder {
     /**
      * Set of entities with a nonzero movement vector
      */
@@ -240,7 +211,7 @@ export class SpatialSystem extends System {
     singleton(entity: Entity, alpha: number, x: number, y: number) {
         return new Promise<EntityMovement>((resolve, reject) => {
             if (this.movements.has(entity)) {
-                reject(new OngoingError(entity.movement!));
+                reject(entity.movement ? new OngoingError(entity.movement) : new TypeError("Missing movement"));
             } else {
                 function done(this: EntityMovement, _entity: Entity, other?: Entity) {
                     if (other) {
