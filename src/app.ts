@@ -1,6 +1,6 @@
 import * as ROT from 'rot-js';
 import { AssetLoader } from './assets';
-import { classes } from './ecs/actors';
+import { EntityOperations, Floor, HamsterTemplate, MoneyTemplate, Wall } from './ecs/actors';
 import { Engine } from './ecs/engine';
 import { Entity } from './ecs/entities';
 import { simple, SimpleOSD } from './ecs/rendering';
@@ -34,14 +34,26 @@ export class Game {
 
         const engine = new Engine;
 
-        const F = classes({
+        const operations: EntityOperations = {
             add(entity) { return engine.add(entity); },
             delete(entity) { return engine.delete(entity); },
             find(position) { return engine.spatial.grid.find(position); },
             movement: engine.spatial
-        });
-        
-        const player = new F.Hamster;
+        };
+
+        class Hamster extends HamsterTemplate {
+            get operations() {
+                return operations;
+            }
+        }
+
+        class Money extends MoneyTemplate {
+            get operations() {
+                return operations;
+            }
+        }
+
+        const player = new Hamster;
 
         player.position.x = 128;
         player.position.y = 128;
@@ -59,10 +71,10 @@ export class Game {
         digger.create((x, y, content) => {
             let entity: Entity;
             if (content) {
-                entity = new F.Wall(x, y);
+                entity = new Wall(x, y);
             } else {
                 const what = ROT.RNG.getWeightedValue({floor: 99, tp: 1});
-                entity = what === 'floor' ? new F.Floor(x, y) : new F.Money(x, y);
+                entity = what === 'floor' ? new Floor(x, y) : new Money(x, y);
             }
             engine.add(entity);
         });
@@ -79,12 +91,12 @@ export class Game {
         let tp = 0;
 
         engine.spatial.events.on('collided', (a: Entity, b: Entity) => {
-            if (a instanceof F.Hamster) {
-                if (b instanceof F.Money) {
+            if (a instanceof Hamster) {
+                if (b instanceof Money) {
                     b.consumed(2, () => delete osd.text);
                     const s = ROT.RNG.getItem(["*om nom nom*", "*chmonk*", "*chomp*"])!;
                     osd.text = `${s} [${++tp}]`;
-                } else if (b instanceof F.Wall) {
+                } else if (b instanceof Wall) {
                     a.shake();
                 }
             }
