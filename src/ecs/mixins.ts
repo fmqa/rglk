@@ -32,24 +32,17 @@ export class ActionQueue {
      */
     cap = 1;
 
-    /**
-     * Action consumption per turn
-     */
-    consumption = 1;
-
     async action() {
-        for (let i = 0, n = this.consumption; i < n; i++) {
-            // Pop the newest action, or block/wait until an action is available
-            const action = this.actions.pop() ?? await new Promise(resolve => this.wakeup.once('added', a => resolve(this.actions.pop() ?? a)));
-            if (action) {
-                // stop older / less recent tasks which may already be running
-                this.cancel();
-                // create new cancellation token
-                const controller = new AbortController;
-                this.cancellation.add(controller);
-                // do action
-                await action(controller.signal);
-            }
+        // Pop the newest action, or block/wait until an action is available
+        const action = this.actions.pop() ?? await new Promise(resolve => this.wakeup.once('added', a => resolve(this.actions.pop() ?? a)));
+        if (action) {
+            // stop older / less recent tasks which may already be running
+            this.cancel();
+            // create new cancellation token
+            const controller = new AbortController;
+            this.cancellation.add(controller);
+            // do action
+            await action(controller.signal);
         }
     }
 
