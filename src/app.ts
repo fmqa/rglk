@@ -84,6 +84,12 @@ export class Game {
             y: 1
         };
 
+        player.extra = 0.5;
+        player.events.on('extra', () => {
+            osd.text = "Extra turn!";
+            player.timer.defer(signal => signal.aborted || delete osd.text, 1);
+        });
+
         engine.draw.events
             .on('drawn', simple(display, engine.camera, osd))
             .on('cleared', display.clear, display);
