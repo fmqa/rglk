@@ -1,7 +1,7 @@
 import * as EventEmitter from "eventemitter3";
 import { RNG } from "rot-js";
 import AStar from "rot-js/lib/path/astar";
-import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point } from "./components";
+import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point, CollisionError } from "./components";
 import { BaseEntity, Entity } from "./entities";
 import { EntityActionQueueMixin, EntityTimerMixin } from "./mixins";
 
@@ -15,9 +15,10 @@ export interface EntityOperations {
     movement: MovementBuilder;
 }
 
-export interface Perks {
-    speed?: number;
-    extra?: number;
+/**
+ * Timer-only entity for simple timed events
+ */
+export class TimerEntity extends EntityTimerMixin(BaseEntity) {
 }
 
 /**
@@ -46,15 +47,31 @@ export abstract class HamsterTemplate extends EntityTimerMixin(EntityActionQueue
     /**
      * Event bus
      */
-    events = new EventEmitter<'extra'>();
+    events = new EventEmitter<'encored' | 'collided'>();
 
     async action() {
         // Delegate to default implementation first
-        await super.action();
+        try {
+            await super.action();
+        } catch (e) {
+            if (e instanceof CollisionError) {
+                this.events.emit('collided', e.object);
+            } else {
+                throw e;
+            }
+        }
         // Extra action behavior
         if (RNG.getUniform() < this.extra) {
-            this.events.emit('extra', this);
-            await super.action();
+            this.events.emit('encored', this);
+            try {
+                await super.action();
+            } catch (e) {
+                if (e instanceof CollisionError) {
+                    this.events.emit('collided', e.object)
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 
