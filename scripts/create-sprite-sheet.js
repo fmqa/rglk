@@ -2,8 +2,17 @@ const yargs = require('yargs');
 const Jimp = require('jimp');
 
 const argv = yargs.command('$0 <src> <dst>', 'build spritesheet')
+    .option('bg', {
+        alias: 'background',
+        demandOption: true,
+        default: '#111133',
+        describe: 'transparent color',
+        type: 'string'
+    })
     .help()
     .argv;
+
+argv.bg = Jimp.cssColorToHex(argv.bg);
 
 const L = {
     char0: 97,
@@ -37,7 +46,7 @@ function extract(src, x, y, w, h) {
         .crop(x, y, w, h)
         .scan(0, 0, w, h, function(x, y) {
             const c = this.getPixelColor(x, y);
-            this.setPixelColor(c < 0xee000000 ? Jimp.rgbaToInt(0, 0, 0, 0) : Jimp.rgbaToInt(255, 255, 255, 255), x, y);
+            this.setPixelColor(c === argv.bg ? 0 : 0xffffffff, x, y);
         });
 }
 
