@@ -69,14 +69,15 @@ export class Game {
 
         const digger = new ROT.Map.Digger(engine.camera.w, engine.camera.h);
         digger.create((x, y, content) => {
-            let entity: Entity;
             if (content) {
-                entity = new Wall(x, y);
+                engine.add(new Wall(x, y));
             } else {
                 const what = ROT.RNG.getWeightedValue({floor: 99, tp: 1});
-                entity = what === 'floor' ? new Floor(x, y) : new Money(x, y);
+                if (what === 'tp') {
+                    engine.add(new Money(x, y));
+                }
+                engine.add(new Floor(x, y));
             }
-            engine.add(entity);
         });
 
         const osd: SimpleOSD = {
@@ -141,7 +142,7 @@ export class Game {
                 width: 24,
                 height: 24,
                 forceSquareRatio: true,
-                spacing: 1.15
+                spacing: 1.125
             })
         );
     }
