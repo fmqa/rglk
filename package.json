@@ -25,7 +25,7 @@
     "webpack-cli": "^3.3.12",
     "webpack-dev-server": "^3.11.0",
     "yaml-loader": "^0.6.0",
-    "yargs": "^16.1.0"
+    "yargs": "^16.1.1"
   },
   "dependencies": {
     "eventemitter3": "^4.0.7",
