@@ -52,115 +52,40 @@ function extract(src, x, y, w, h) {
 
 Jimp.read(argv.src, (err, src) => {
     new Jimp(256, 368, 0, (err, dst) => {
-        let j = 0;
-
-        for (let i = 0; i < 13; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.char0, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 13; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.char1, 16, 16), 16 * i, j * 16);
-        }
-        j++
-        for (let i = 0; i < 7; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.char2, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 12; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.exp, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 13; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.fauna, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 13; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.trolls, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 8; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.undead, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 8; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.creatures, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 16; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.build0, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 7; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.build1, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 12; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.build2, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 12; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.dev, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 13; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.overw, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 16; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.explr0, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 5; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.explr1, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 16; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.food0, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 6; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.food1, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 16; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.outfit0, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 11; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.outfit1, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 15; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.mag, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 6; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.music, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
-        for (let i = 0; i < 16; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.sym0, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-        for (let i = 0; i < 7; i++) {
-            dst.blit(extract(src, 32 + 16 * i, L.sym1, 16, 16), 16 * i, j * 16);
-        }
-        j++;
-
+        const blitter = {
+            r: 0,
+            row(n, y) {
+                for (let i = 0; i < n; i++) {
+                    dst.blit(extract(src, 32 + 16 * i, y, 16, 16), 16 * i, this.r * 16);
+                }
+                this.r++;
+                return this;
+            }
+        };
+        blitter
+            .row(13, L.char0)
+            .row(13, L.char1)
+            .row(7, L.char2)
+            .row(12, L.exp)
+            .row(13, L.fauna)
+            .row(4, L.trolls)
+            .row(8, L.undead)
+            .row(8, L.creatures)
+            .row(16, L.build0)
+            .row(7, L.build1)
+            .row(12, L.build2)
+            .row(12, L.dev)
+            .row(13, L.overw)
+            .row(16, L.explr0)
+            .row(5, L.explr1)
+            .row(16, L.food0)
+            .row(6, L.food1)
+            .row(16, L.outfit0)
+            .row(11, L.outfit1)
+            .row(15, L.mag)
+            .row(6, L.music)
+            .row(16, L.sym0)
+            .row(7, L.sym1);
         dst.write(argv.dst);
     })
 });
