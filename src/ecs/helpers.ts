@@ -44,7 +44,7 @@ export class ActionQueue {
             const controller = new AbortController;
             this.cancellation.add(controller);
             // do action
-            await action(controller.signal);
+            await action(controller.signal).finally(() => this.cancellation.delete(controller));
         }
     }
 
