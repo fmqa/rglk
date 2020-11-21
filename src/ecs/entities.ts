@@ -42,12 +42,6 @@ export interface Entity {
 }
 
 /**
- * Base entity class for use with mixins
- */
-export class BaseEntity implements Entity {
-}
-
-/**
  * Operation performed on an entity
  */
 export interface EntityFn {
