@@ -53,6 +53,8 @@ export abstract class HamsterTemplate implements Entity {
      */
     events = new EventEmitter<'encored' | 'collided'>();
 
+    protected shaking?: AbortController;
+
     async action() {
         // Delegate to queue first
         try {
@@ -89,6 +91,10 @@ export abstract class HamsterTemplate implements Entity {
      * @param y target y coordinate
      */
     navigate(x: number, y: number) {
+        if (this.shaking) {
+            this.shaking.abort();
+            delete this.shaking;
+        }
         this.queue.cancel();
         const astar = new AStar(x, y, (x, y) => !this.operations.find(new EntityPosition(x, y, this.position.z))?.obstacle, {topology: 4});
         const waypoints: Point[] = [];
@@ -100,12 +106,11 @@ export abstract class HamsterTemplate implements Entity {
      * Start a "shake" animation
      */
     shake() {
-        if (this.movement) {
+        if (!this.shaking && this.movement) {
             const {x, y} = this.position;
             const sx = Math.sign(this.movement.x - x);
             const sy = Math.sign(this.movement.y - y);
-            this.queue.cancel();
-            const token = this.timer.defer(async (signal) => {
+            this.shaking = this.timer.defer(async (signal) => {
                 for (let i = 0; i < 12; i++) {
                     if (signal.aborted) {
                         break;
@@ -116,9 +121,7 @@ export abstract class HamsterTemplate implements Entity {
                 }
                 this.position.x = x;
                 this.position.y = y;
-                this.queue.cancellation.delete(token);
             });
-            this.queue.cancellation.add(token);
         }
     }
 }
