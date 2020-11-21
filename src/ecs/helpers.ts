@@ -43,6 +43,7 @@ export class ActionQueue {
             // create new cancellation token
             const controller = new AbortController;
             this.cancellation.add(controller);
+            controller.signal.addEventListener('abort', () => this.cancellation.delete(controller));
             // do action
             await action(controller.signal).finally(() => this.cancellation.delete(controller));
         }
@@ -111,7 +112,9 @@ export class Timer {
      */
     defer(callback: (signal: AbortSignal) => any, delay: number = 0) {
         const controller = new AbortController;
-        this.queue.add(() => callback(controller.signal), delay);
+        const event = () => controller.signal.aborted || callback(controller.signal);
+        this.queue.add(event, delay);
+        controller.signal.addEventListener('abort', () => this.queue.remove(event));
         return controller;
     }
 }
