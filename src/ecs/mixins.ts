@@ -1,6 +1,6 @@
 import * as EventEmitter from "eventemitter3";
 import { EventQueue } from "rot-js";
-import { Entity, EntityAction } from "./entities";
+import { EntityAction } from "./entities";
 
 /**
  * forEach callback for a set of AbortControllers. Triggers cancellation for all callbacks
@@ -68,6 +68,13 @@ export class ActionQueue {
     }
 }
 
+/**
+ * Closure alias
+ */
+interface Runnable {
+    (): void;
+}
+
 export class Timer {
     protected readonly queue = new EventQueue<Runnable>();
     protected current: Runnable | null = null;
@@ -89,7 +96,7 @@ export class Timer {
      * @param t time in seconds
      */
     sleep(t: number) {
-        return new Promise(resolve => this.queue.add(resolve, t));
+        return new Promise<void>(resolve => this.queue.add(resolve, t));
     }
 
     /**
@@ -102,44 +109,4 @@ export class Timer {
         this.queue.add(() => callback(controller.signal), delay);
         return controller;
     }
-}
-
-/**
- * Type alias for any constructor name
- */
-interface Constructor {
-    new (...args: any[]): {};
-}
-
-/**
- * Closure alias
- */
-interface Runnable {
-    (): void;
-}
-
-/**
- * Mixes a blocking action queue into the given superclass
- * @param superclass superclass to extend
- */
-export function EntityActionQueueMixin<T extends Constructor>(superclass: T) {
-    return class extends superclass implements Entity {
-        readonly queue = new ActionQueue;
-        action() {
-            return this.queue.action();
-        }
-    };
-}
-
-/**
- * Mixes an asynchronous timed event processor into the given superclass
- * @param superclass superclass to extend
- */
-export function EntityTimerMixin<T extends Constructor>(superclass: T) {
-    return class extends superclass implements Entity {
-        readonly timer = new Timer;
-        tick(dt: number) {
-            return this.timer.tick(dt);
-        }
-    };
 }

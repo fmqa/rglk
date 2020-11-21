@@ -3,7 +3,7 @@ import { RNG } from "rot-js";
 import AStar from "rot-js/lib/path/astar";
 import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point, CollisionError } from "./components";
 import { BaseEntity, Entity } from "./entities";
-import { EntityActionQueueMixin, EntityTimerMixin } from "./mixins";
+import { ActionQueue, Timer } from "./mixins";
 
 /**
  * Entity operations facade
@@ -18,17 +18,35 @@ export interface EntityOperations {
 /**
  * Timer-only entity for simple timed events
  */
-export class TimerEntity extends EntityTimerMixin(BaseEntity) {
+export class TimerEntity implements Entity {
+    /**
+     * Task timer 
+     */
+    timer = new Timer;
+
+    tick(dt: number) {
+        return this.timer.tick(dt);
+    }
 }
 
 /**
  * Hamster actor template
  */
-export abstract class HamsterTemplate extends EntityTimerMixin(EntityActionQueueMixin(BaseEntity)) {
+export abstract class HamsterTemplate implements Entity {
     /**
      * Reference to entity operation provider
      */
     protected abstract operations: EntityOperations;
+
+    /**
+     * Action queue
+     */
+    queue = new ActionQueue;
+
+    /**
+     * Task timer
+     */
+    timer = new Timer;
 
     image: EntityImage = {tile: "\u{1F439}", fg: "white", bg: "transparent"};
     position = new EntityPosition(0, 0, 1);
@@ -50,9 +68,9 @@ export abstract class HamsterTemplate extends EntityTimerMixin(EntityActionQueue
     events = new EventEmitter<'encored' | 'collided'>();
 
     async action() {
-        // Delegate to default implementation first
+        // Delegate to queue first
         try {
-            await super.action();
+            await this.queue.action();
         } catch (e) {
             if (e instanceof CollisionError) {
                 this.events.emit('collided', e.object);
@@ -64,7 +82,7 @@ export abstract class HamsterTemplate extends EntityTimerMixin(EntityActionQueue
         if (RNG.getUniform() < this.extra) {
             this.events.emit('encored', this);
             try {
-                await super.action();
+                await this.queue.action();
             } catch (e) {
                 if (e instanceof CollisionError) {
                     this.events.emit('collided', e.object)
@@ -73,6 +91,10 @@ export abstract class HamsterTemplate extends EntityTimerMixin(EntityActionQueue
                 }
             }
         }
+    }
+
+    tick(dt: number) {
+        return this.timer.tick(dt);
     }
 
     /**
@@ -143,18 +165,26 @@ export class Wall implements Entity {
 /**
  * Money item template
  */
-export abstract class MoneyTemplate extends EntityTimerMixin(BaseEntity) {
+export abstract class MoneyTemplate implements Entity {
     /**
      * Reference to entity operation provider
      */
     protected abstract operations: EntityOperations;
 
+    /**
+     * Task timer
+     */
+    timer = new Timer;
+
     image: EntityImage = {tile: "\u{1F9FB}", fg: "white"};
     position: EntityPosition;
 
     constructor(x: number, y: number) {
-        super();
         this.position = new EntityPosition(x, y, 1);
+    }
+
+    tick(dt: number) {
+        return this.timer.tick(dt);
     }
 
     /**
