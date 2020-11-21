@@ -1,8 +1,9 @@
 import * as ROT from 'rot-js';
 import { AssetLoader } from './assets';
-import { EntityOperations, Floor, HamsterTemplate, MoneyTemplate, TimerEntity, Wall } from './ecs/actors';
+import { EntityOperations, Floor, HamsterTemplate, MoneyTemplate, Wall } from './ecs/actors';
 import { Engine } from './ecs/engine';
 import { Entity } from './ecs/entities';
+import { Timer } from './ecs/helpers';
 import { simple, SimpleOSD } from './ecs/rendering';
 
 export class Game {
@@ -85,13 +86,13 @@ export class Game {
             y: 1
         };
 
-        const timer = new TimerEntity;
+        const timer = new Timer;
         engine.add(timer);
 
         player.extra = 0.5;
         player.events.on('encored', () => {
             osd.text = "Extra turn!";
-            timer.timer.defer(signal => signal.aborted || delete osd.text, 1);
+            timer.defer(signal => signal.aborted || delete osd.text, 1);
         });
 
         engine.draw.events
@@ -103,7 +104,7 @@ export class Game {
         engine.spatial.events.on('collided', (a: Entity, b: Entity) => {
             if (a instanceof Hamster) {
                 if (b instanceof Money) {
-                    b.consumed(2, () => timer.timer.defer(() => delete osd.text));
+                    b.consumed(2, () => timer.defer(() => delete osd.text));
                     const s = ROT.RNG.getItem(["*om nom nom*", "*chmonk*", "*chomp*"])!;
                     osd.text = `${s} [${++tp}]`;
                 } else if (b instanceof Wall) {

@@ -16,20 +16,6 @@ export interface EntityOperations {
 }
 
 /**
- * Timer-only entity for simple timed events
- */
-export class TimerEntity implements Entity {
-    /**
-     * Task timer 
-     */
-    timer = new Timer;
-
-    tick(dt: number) {
-        return this.timer.tick(dt);
-    }
-}
-
-/**
  * Hamster actor template
  */
 export abstract class HamsterTemplate implements Entity {
