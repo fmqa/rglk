@@ -3,7 +3,7 @@ import { RNG } from "rot-js";
 import AStar from "rot-js/lib/path/astar";
 import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point, CollisionError } from "./components";
 import { BaseEntity, Entity } from "./entities";
-import { ActionQueue, Timer } from "./mixins";
+import { ActionQueue, Timer } from "./helpers";
 
 /**
  * Entity operations facade

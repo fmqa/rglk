@@ -10,12 +10,14 @@ function cancelAll(controller: AbortController, _ignore: AbortController, set: S
     set.delete(controller);
 }
 
+/**
+ * Action executor
+ */
 export class ActionQueue {
     /**
      * Action stack
      */
     protected readonly actions: EntityAction[] = [];
-
 
     /**
      * Wakeup notifier
@@ -75,6 +77,9 @@ interface Runnable {
     (): void;
 }
 
+/**
+ * Timed callback executor
+ */
 export class Timer {
     protected readonly queue = new EventQueue<Runnable>();
     protected current: Runnable | null = null;
