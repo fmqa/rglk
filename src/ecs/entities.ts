@@ -5,10 +5,18 @@ import { EntityPosition, EntityImage, EntityMovement } from "./components";
  */
 export type EntityEvent = 'added' | 'deleted' | 'cleared';
 
+export interface Periodic {
+    /**
+     * Timer/periodic behavior
+     * @param dt time elapsed since last frame
+     */
+    tick(dt: number): boolean;
+}
+
 /**
  * Entity interface
  */
-export interface Entity {
+export interface Entity extends Partial<Periodic> {
     /**
      * Movement component
      */
@@ -23,12 +31,6 @@ export interface Entity {
      * Image component
      */
     image?: EntityImage;
-
-    /**
-     * Timer/periodic behavior
-     * @param dt time elapsed since last frame
-     */
-    tick?(dt: number): boolean;
 
     /**
      * Turn action

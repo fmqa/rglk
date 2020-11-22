@@ -4,7 +4,8 @@ import { EntityOperations, Floor, HamsterTemplate, MoneyTemplate, Wall } from '.
 import { Engine } from './ecs/engine';
 import { Entity } from './ecs/entities';
 import { Timer } from './ecs/helpers';
-import { simple, SimpleOSD } from './ecs/rendering';
+import { TextFlasher, PositionedText } from './ecs/interface';
+import { simple } from './ecs/rendering';
 
 export class Game {
     private constructor(public display: ROT.Display) {
@@ -81,19 +82,16 @@ export class Game {
             }
         });
 
-        const osd: SimpleOSD = {
+        const osd: PositionedText = {
             x: this.display.getOptions().width / 2,
             y: 1
         };
 
-        const timer = new Timer;
-        engine.add(timer);
+        const flasher = new TextFlasher(osd);
+        engine.add(flasher);
 
         player.extra = 0.5;
-        player.events.on('encored', () => {
-            osd.text = "Extra turn!";
-            timer.defer(signal => signal.aborted || delete osd.text, 1);
-        });
+        player.events.on('encored', () => flasher.flash("Extra turn!", 1));
 
         engine.draw.events
             .on('drawn', simple(display, engine.camera, osd))
@@ -104,9 +102,9 @@ export class Game {
         engine.spatial.events.on('collided', (a: Entity, b: Entity) => {
             if (a instanceof Hamster) {
                 if (b instanceof Money) {
-                    b.consumed(2, () => timer.defer(() => delete osd.text));
                     const s = ROT.RNG.getItem(["*om nom nom*", "*chmonk*", "*chomp*"])!;
-                    osd.text = `${s} [${++tp}]`;
+                    const controller = flasher.flash(`${s} [${++tp}]`, 1);
+                    b.consumed(2, () => controller.abort());
                 } else if (b instanceof Wall) {
                     a.shake();
                 }
