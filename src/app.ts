@@ -8,30 +8,9 @@ import { simple } from './ecs/rendering';
 
 export class Game {
     private constructor(public display: ROT.Display) {
-        const onresize = () => {
-            const sw = Math.min(document.documentElement.clientWidth, window.innerWidth || 0);
-            const sh = Math.min(document.documentElement.clientHeight, window.innerHeight || 0);
-            const canvas = this.container! as HTMLCanvasElement;
-            const canvasRatio = canvas.height / canvas.width;
-            const windowRatio = sh / sw;
-            let width;
-            let height;
-        
-            if (windowRatio < canvasRatio) {
-                height = sh;
-                width = height / canvasRatio;
-            } else {
-                width = sw;
-                height = width * canvasRatio;
-            }
-        
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-        };
-
-        window.onresize = onresize;
-
-        onresize();
+        const canvas = this.container! as HTMLCanvasElement;
+        canvas.style.width = 'calc(100vmin - 16px)';
+        canvas.style.height = 'calc(100vmin - 16px)';
 
         const engine = new Engine;
 
