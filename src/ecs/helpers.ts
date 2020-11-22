@@ -110,7 +110,7 @@ export class Timer {
      * @param callback callback to execute
      * @param delay optional delay, delay is immediate execution
      */
-    defer(callback: (signal: AbortSignal) => any, delay: number = 0) {
+    defer(callback: (signal: AbortSignal) => unknown, delay: number = 0) {
         const controller = new AbortController;
         const event = () => controller.signal.aborted || callback(controller.signal);
         this.queue.add(event, delay);
