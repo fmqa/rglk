@@ -1,6 +1,6 @@
 import * as EventEmitter from "eventemitter3";
 import { EventQueue } from "rot-js";
-import { EntityAction } from "./entities";
+import { EntityAction, Periodic } from "./entities";
 
 /**
  * forEach callback for a set of AbortControllers. Triggers cancellation for all callbacks
@@ -81,7 +81,7 @@ interface Runnable {
 /**
  * Timed callback executor
  */
-export class Timer {
+export class Timer implements Periodic {
     protected readonly queue = new EventQueue<Runnable>();
     protected current: Runnable | null = null;
     protected elapsed: number = 0;
