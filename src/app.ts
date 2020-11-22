@@ -3,7 +3,6 @@ import { AssetLoader } from './assets';
 import { EntityOperations, Floor, HamsterTemplate, MoneyTemplate, Wall } from './ecs/actors';
 import { Engine } from './ecs/engine';
 import { Entity } from './ecs/entities';
-import { Timer } from './ecs/helpers';
 import { TextFlasher, PositionedText } from './ecs/interface';
 import { simple } from './ecs/rendering';
 
