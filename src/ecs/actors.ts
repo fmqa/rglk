@@ -56,18 +56,28 @@ export abstract class HamsterTemplate implements Entity {
     protected shaking?: AbortController;
 
     async action() {
+        const controller = new AbortController;
+        // Delegate to queue first
         try {
-            // First action
             await this.queue.action();
-            // Bonus action
-            if (RNG.getUniform() < this.extra) {
-                await this.queue.action();
-            }
         } catch (e) {
             if (e instanceof CollisionError) {
-                this.events.emit('collided', e.object);
+                this.events.emit('collided', e.object, controller);
             } else {
                 throw e;
+            }
+        }
+        // Extra action behavior
+        if (!controller.signal.aborted && RNG.getUniform() < this.extra) {   
+            this.events.emit('encored', this);
+            try {
+                await this.queue.action();
+            } catch (e) {
+                if (e instanceof CollisionError) {
+                    this.events.emit('collided', e.object)
+                } else {
+                    throw e;
+                }
             }
         }
     }
