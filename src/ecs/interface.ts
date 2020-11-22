@@ -54,4 +54,13 @@ export class TextFlasher implements Periodic {
         this.controller = controller;
         return controller;
     }
+
+    /**
+     * Unflash/remove currently displayed text string
+     */
+    unflash() {
+        this.controller?.abort();
+        delete this.controller
+        delete this.subject.text;
+    }
 }
