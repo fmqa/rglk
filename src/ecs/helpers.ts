@@ -1,6 +1,6 @@
 import * as EventEmitter from "eventemitter3";
 import { EventQueue } from "rot-js";
-import { EntityAction, Periodic } from "./entities";
+import { Actor, EntityAction, Periodic } from "./entities";
 
 /**
  * forEach callback for a set of AbortControllers. Triggers cancellation for all callbacks
@@ -13,7 +13,7 @@ function cancelAll(controller: AbortController, _ignore: AbortController, set: S
 /**
  * Action executor
  */
-export class ActionQueue {
+export class ActionQueue implements Actor {
     /**
      * Action stack
      */

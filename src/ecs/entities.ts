@@ -5,6 +5,9 @@ import { EntityPosition, EntityImage, EntityMovement } from "./components";
  */
 export type EntityEvent = 'added' | 'deleted' | 'cleared';
 
+/**
+ * Periodic activity to be performed on every tick
+ */
 export interface Periodic {
     /**
      * Timer/periodic behavior
@@ -14,9 +17,19 @@ export interface Periodic {
 }
 
 /**
+ * Asynchronous actor
+ */
+export interface Actor {
+    /**
+     * Turn action
+     */
+    action?(signal?: AbortSignal): Promise<void>;
+}
+
+/**
  * Entity interface
  */
-export interface Entity extends Partial<Periodic> {
+export interface Entity extends Partial<Periodic>, Partial<Actor> {
     /**
      * Movement component
      */
@@ -31,11 +44,6 @@ export interface Entity extends Partial<Periodic> {
      * Image component
      */
     image?: EntityImage;
-
-    /**
-     * Turn action
-     */
-    action?(signal?: AbortSignal): Promise<void>;
 
     /**
      * Obstacle flag
