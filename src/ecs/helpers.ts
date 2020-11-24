@@ -1,5 +1,5 @@
 import * as EventEmitter from "eventemitter3";
-import { EventQueue } from "rot-js";
+import { EventQueue, RNG } from "rot-js";
 import { Actor, EntityAction, Periodic } from "./entities";
 
 /**
@@ -116,5 +116,43 @@ export class Timer implements Periodic {
         this.queue.add(event, delay);
         controller.signal.addEventListener('abort', () => this.queue.remove(event));
         return controller;
+    }
+}
+
+/**
+ * Probabalistic action dispatcher events
+ */
+export type ProbabalisticActionEvent = 'thrown' | 'encored';
+
+/**
+ * Triggers N actions according to the cumulative product
+ * of an N dimensional array of action probabilities
+ */
+export class ProbabalisticActionDispatcher implements Actor {
+    /**
+     * Events fired by this object
+     */
+    public readonly events = new EventEmitter<ProbabalisticActionEvent>();
+
+    /**
+     * Factory for probabilistic action dispatchers
+     * @param actor actor to dispatch actions to
+     * @param proba array of action probabilites
+     */
+    constructor(public actor: Actor, public proba: number[]) { }
+
+    async action(signal?: AbortSignal) {
+        let cumprod = 1;
+        for (let i = 0, n = this.proba.length; i < n; i++) {
+            cumprod *= this.proba[i];
+            if (!signal?.aborted && RNG.getUniform() < cumprod) {
+                this.events.emit('encored', i + 1);
+                try {
+                    await this.actor.action(signal);
+                } catch (e) {
+                    this.events.emit('thrown', i, e);
+                }
+            }
+        }
     }
 }

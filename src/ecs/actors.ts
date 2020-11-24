@@ -3,7 +3,7 @@ import { RNG } from "rot-js";
 import AStar from "rot-js/lib/path/astar";
 import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point, CollisionError } from "./components";
 import { Entity } from "./entities";
-import { ActionQueue, Timer } from "./helpers";
+import { ActionQueue, ProbabalisticActionDispatcher, Timer } from "./helpers";
 
 /**
  * Entity operations facade
@@ -44,42 +44,14 @@ export abstract class HamsterTemplate implements Entity {
     speed = 4;
 
     /**
-     * Extra turn chance
+     * Turn chances
      */
-    extra: number = 0;
-
-    /**
-     * Event bus
-     */
-    events = new EventEmitter<'encored' | 'collided'>();
+    pad = new ProbabalisticActionDispatcher(this.queue, [1, 0])
 
     protected shaking?: AbortController;
 
-    async action() {
-        const controller = new AbortController;
-        // Delegate to queue first
-        try {
-            await this.queue.action();
-        } catch (e) {
-            if (e instanceof CollisionError) {
-                this.events.emit('collided', e.object, controller);
-            } else {
-                throw e;
-            }
-        }
-        // Extra action behavior
-        if (!controller.signal.aborted && RNG.getUniform() < this.extra) {   
-            this.events.emit('encored', this);
-            try {
-                await this.queue.action();
-            } catch (e) {
-                if (e instanceof CollisionError) {
-                    this.events.emit('collided', e.object)
-                } else {
-                    throw e;
-                }
-            }
-        }
+    action(signal?: AbortSignal) {
+        return this.pad.action(signal);
     }
 
     tick(dt: number) {
@@ -124,6 +96,14 @@ export abstract class HamsterTemplate implements Entity {
                 this.position.y = y;
             });
         }
+    }
+
+    get extra() {
+        return this.pad.proba[1];
+    }
+
+    set extra(value: number) {
+        this.pad.proba[1] = value;
     }
 }
 

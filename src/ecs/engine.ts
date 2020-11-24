@@ -8,8 +8,8 @@ import { Camera } from "./camera";
 function focusOnPlayer(this: Engine, entity: Entity) {
     if (this.player === entity && entity.position) {
         let {x, y} = entity.position;
-        x = Math.round(entity.position.x);
-        y = Math.round(entity.position.y);
+        x = Math.round(x);
+        y = Math.round(y);
         if (this.camera.focus(x, y)) {
             this.camera.select(e => this.add(e));
         }

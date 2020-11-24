@@ -22,8 +22,9 @@ export interface Periodic {
 export interface Actor {
     /**
      * Turn action
+     * @param signal cancellation token
      */
-    action?(signal?: AbortSignal): Promise<void>;
+    action(signal?: AbortSignal): Promise<void>;
 }
 
 /**

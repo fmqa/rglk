@@ -69,7 +69,7 @@ export class Game {
         engine.add(flasher);
 
         player.extra = 0.5;
-        player.events.on('encored', () => flasher.flash("Extra turn!", 1));
+        player.pad.events.on('encored', (i: number) => i > 1 && flasher.flash("Extra turn!", 1));
 
         engine.draw.events
             .on('drawn', simple(display, engine.camera, osd))
