@@ -48,8 +48,8 @@ export abstract class HamsterTemplate implements Entity {
 
     protected shaking?: AbortController;
 
-    action(signal?: AbortSignal) {
-        return this.pad.action(signal);
+    action() {
+        return this.pad.action();
     }
 
     tick(dt: number) {

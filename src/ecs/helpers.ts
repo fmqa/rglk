@@ -141,14 +141,14 @@ export class ProbabalisticActionDispatcher implements Actor {
      */
     constructor(public actor: Actor, public proba: number[]) { }
 
-    async action(signal?: AbortSignal) {
+    async action() {
         let cumprod = 1;
         for (let i = 0, n = this.proba.length; i < n; i++) {
             cumprod *= this.proba[i];
-            if (!signal?.aborted && RNG.getUniform() < cumprod) {
+            if (RNG.getUniform() < cumprod) {
                 this.events.emit('encored', i + 1);
                 try {
-                    await this.actor.action(signal);
+                    await this.actor.action();
                 } catch (e) {
                     this.events.emit('thrown', i, e);
                 }
