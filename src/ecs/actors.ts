@@ -1,7 +1,5 @@
-import * as EventEmitter from "eventemitter3";
-import { RNG } from "rot-js";
 import AStar from "rot-js/lib/path/astar";
-import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point, CollisionError } from "./components";
+import { EntityImage, EntityPosition, EntityMovement, MovementBuilder, Point } from "./components";
 import { Entity } from "./entities";
 import { ActionQueue, ProbabalisticActionDispatcher, Timer } from "./helpers";
 
