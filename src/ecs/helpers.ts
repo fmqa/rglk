@@ -34,9 +34,17 @@ export class ActionQueue implements Actor {
      */
     cap = 1;
 
-    async action() {
+    async action(signal?: AbortSignal) {
+        if (signal?.aborted) {
+            this.cancel();
+            return;
+        }
+        signal?.addEventListener('abort', () => this.cancel());
         // Pop the newest action, or block/wait until an action is available
-        const action = this.actions.pop() ?? await new Promise(resolve => this.wakeup.once('added', a => resolve(this.actions.pop() ?? a)));
+        const action = this.actions.pop() ?? await new Promise(resolve => {
+            this.wakeup.once('added', a => resolve(this.actions.pop() ?? a));
+            signal?.addEventListener('abort', () => resolve(undefined));
+        });
         if (action) {
             // stop older / less recent tasks which may already be running
             this.cancel();
@@ -141,16 +149,19 @@ export class ProbabalisticActionDispatcher implements Actor {
      */
     constructor(public actor: Actor, public proba: number[]) { }
 
-    async action() {
+    async action(signal?: AbortSignal) {
         let cumprod = 1;
-        for (let i = 0, n = this.proba.length; i < n; i++) {
+        for (let i = 0, n = this.proba.length; i < n && !signal?.aborted; i++) {
             cumprod *= this.proba[i];
             if (RNG.getUniform() < cumprod) {
                 this.events.emit('encored', i + 1);
+                if (signal?.aborted) {
+                    break;
+                }
                 try {
-                    await this.actor.action();
+                    await this.actor.action(signal);
                 } catch (e) {
-                    this.events.emit('thrown', i, e);
+                    this.events.emit('thrown', i + 1, e);
                 }
             }
         }
