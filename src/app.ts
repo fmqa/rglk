@@ -2,7 +2,7 @@ import * as ROT from 'rot-js';
 import { AssetLoader } from './assets';
 import { EntityOperations, Floor, HamsterTemplate, MoneyTemplate, Wall } from './ecs/actors';
 import { Engine } from './ecs/engine';
-import { Entity } from './ecs/entities';
+import { AsyncableEntityFnRunner, Entity } from './ecs/entities';
 import { TextFlasher, PositionedText } from './ecs/interface';
 import { simple } from './ecs/rendering';
 
@@ -75,6 +75,10 @@ export class Game {
             .on('drawn', simple(display, engine.camera, osd))
             .on('cleared', display.clear, display);
 
+
+        engine.turn.events.on('transitioned', (run: AsyncableEntityFnRunner) => {
+            run(() => new Promise(resolve => flasher.flash('Turn: ' + player, 1, resolve)));
+        });
         let tp = 0;
 
         engine.spatial.events.on('collided', (a: Entity, b: Entity) => {

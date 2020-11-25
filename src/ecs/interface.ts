@@ -38,17 +38,25 @@ export class TextFlasher implements Periodic {
      * @param value text to flash
      * @param duration reset delay
      */
-    flash(value: string, duration: number) {
+    flash(value: string, duration: number, done?: (signal: AbortSignal) => void) {
         // Abort existing task
         this.controller?.abort();
         // Set text
         this.subject.text = value;
         // Defer erasure of text property for the given duration
-        const controller = this.timer.defer(signal => signal.aborted || delete this.subject.text, duration);
+        const controller = this.timer.defer(signal => {
+            if (!signal.aborted) {
+                delete this.subject.text; 
+            }
+            done?.(signal);
+            done = undefined;
+        }, duration);
         // Remove cancel token on abort
         controller.signal.addEventListener('abort', () => { 
             delete this.controller
             delete this.subject.text;
+            done?.(controller.signal);
+            done = undefined;
         });
         // Assign task token
         this.controller = controller;
