@@ -60,6 +60,20 @@ export interface EntityFn {
 }
 
 /**
+ * Possibly asynchronous operation performed on an entity
+ */
+export interface AsyncableEntityFn {
+    (entity: Entity): undefined | Promise<void>;
+}
+
+/**
+ * Runner of async/non-async entity operations
+ */
+export interface AsyncableEntityFnRunner {
+    (func: AsyncableEntityFn): void;
+}
+
+/**
  * Predicate taking a single entity as an argument
  */
 export interface EntityPredicate {

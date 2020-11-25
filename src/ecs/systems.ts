@@ -1,7 +1,7 @@
 import * as EventEmitter from "eventemitter3";
 import Scheduler from "rot-js/lib/scheduler/scheduler";
 import { CollisionError, EntityMovement, EntityPosition, MovementBuilder, OngoingError, Point } from "./components";
-import { Entity, EntityEvent, EntityPredicate } from "./entities";
+import { AsyncableEntityFn, Entity, EntityEvent, EntityPredicate } from "./entities";
 import { EntityGrid } from "./grid";
 
 export interface Updatable {
@@ -343,6 +343,8 @@ export class TimerSystem extends System {
     }
 }
 
+export type TurnEvent = 'transitioned';
+
 /**
  * Scheduling and action execution system
  */
@@ -356,6 +358,16 @@ export class TurnSystem extends System {
      * Set of entities already added to the scheduler
      */
     subjects = new WeakSet<Entity>();
+
+    /**
+     * Action cancellation tokens per entity 
+     */
+    cancellation = new WeakMap<Entity, AbortController>();
+
+    /**
+     * Turn event bus
+     */
+    readonly events = new EventEmitter<TurnEvent>();
 
     /**
      * Turn scheduler factory
@@ -382,6 +394,7 @@ export class TurnSystem extends System {
     delete(entity: Entity) {
         this.scheduler.remove(entity);
         this.subjects.delete(entity);
+        this.cancellation.delete(entity);
         if (entity === this.current) {
             delete this.current;
         }
@@ -391,6 +404,7 @@ export class TurnSystem extends System {
         this.scheduler.clear();
         delete this.current;
         this.subjects = new WeakSet;
+        this.cancellation = new WeakMap;
     }
     
     update() {
@@ -399,12 +413,32 @@ export class TurnSystem extends System {
         if (!this.current && (this.current = this.scheduler.next())) {
             const current = this.current;
             if (current.action) {
-                // run the action. When finished, we delete the current
-                // entity, thus making the system move to the next entity
-                // on next update
-                current.action().finally(() => {
-                    delete this.current;
+                // Create cancellation controller
+                const controller = new AbortController;
+                this.cancellation.set(current, controller);
+                // Async taskset
+                const tasks = new Set<Promise<void>>();
+                // Signal turn transition. In the second argument we provide
+                // a runner that will call any passed closure with the current
+                // entity -- if the closure is an async closure, we store the
+                // returned promise in the taskset 
+                this.events.emit('transitioned', (proc: AsyncableEntityFn) => {
+                    const result = proc(current);
+                    if (result instanceof Promise) {
+                        tasks.add(result);
+                    }
                 });
+                // Handler callback that switches to the next turn
+                const completed = () => {
+                    delete this.current;
+                    this.cancellation.delete(current);
+                };
+                // Wait for all tasks that need to be performed before the
+                // action is executed
+                Promise.all(tasks).then(() => {
+                    // run the action. When finished, advance the turn
+                    current.action?.(controller.signal).finally(completed);
+                }, completed);
             } else {
                 this.delete(this.current);
             }
