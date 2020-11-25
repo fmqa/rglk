@@ -63,7 +63,7 @@ export interface EntityFn {
  * Possibly asynchronous operation performed on an entity
  */
 export interface AsyncableEntityFn {
-    (entity: Entity): undefined | Promise<void>;
+    (entity: Entity): undefined | Promise<unknown>;
 }
 
 /**

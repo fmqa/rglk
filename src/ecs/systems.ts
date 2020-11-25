@@ -417,7 +417,7 @@ export class TurnSystem extends System {
                 const controller = new AbortController;
                 this.cancellation.set(current, controller);
                 // Async taskset
-                const tasks = new Set<Promise<void>>();
+                const tasks = new Set<Promise<unknown>>();
                 // Signal turn transition. In the second argument we provide
                 // a runner that will call any passed closure with the current
                 // entity -- if the closure is an async closure, we store the
