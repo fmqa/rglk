@@ -97,7 +97,7 @@ export abstract class HamsterTemplate implements Entity {
     }
 
     get extra() {
-        return this.pad.proba[1];
+        return this.pad.proba[1]!;
     }
 
     set extra(value: number) {

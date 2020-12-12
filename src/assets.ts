@@ -5,8 +5,9 @@ export class AssetLoader {
 
     image(id: string): Promise<HTMLImageElement> {
         return new Promise((resolve, reject) => {
-            if (this.images[id]) {
-                resolve(this.images[id]);
+            let img = this.images[id];
+            if (img) {
+                resolve(img);
             } else {
                 const img = this.document.createElement("img");
                 img.onerror = reject;
