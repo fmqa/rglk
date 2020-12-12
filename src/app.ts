@@ -5,13 +5,11 @@ import { Engine } from './ecs/engine';
 import { AsyncableEntityFnRunner, Entity } from './ecs/entities';
 import { TextFlasher, PositionedText } from './ecs/interface';
 import { simple } from './ecs/rendering';
+import ts from './tiles/tileset.png';
+import tm from './tiles/tilemap.yaml';
 
 export class Game {
     private constructor(public display: ROT.Display) {
-        const canvas = this.container! as HTMLCanvasElement;
-        canvas.style.width = 'calc(100vmin - 16px)';
-        canvas.style.height = 'calc(100vmin - 16px)';
-
         const engine = new Engine;
 
         const operations: EntityOperations = {
@@ -40,7 +38,7 @@ export class Game {
 
         engine.player = player;
 
-        engine.camera.r = 12;
+        engine.camera.r = 8;
         engine.camera.w = 256;
         engine.camera.h = 256;
         engine.camera.d = 1;
@@ -116,14 +114,16 @@ export class Game {
         return this.display.getContainer();
     }
 
-    static async create(): Promise<Game> {
+    static async create(assets: AssetLoader): Promise<Game> {
         return new Game(
             new ROT.Display({
-                bg: "black",
-                width: 24,
-                height: 24,
-                forceSquareRatio: true,
-                spacing: 1.125
+                tileWidth: 16,
+                tileHeight: 16,
+                tileSet: await assets.image(ts),
+                tileMap: tm,
+                layout: 'tile',
+                width: 16,
+                height: 16
             })
         );
     }
@@ -131,5 +131,5 @@ export class Game {
 
 document.body.onload = () => {
     const assets = new AssetLoader(document);
-    Game.create().then(x => { const output = x.container!; output.tabIndex = 1; document.body.appendChild(output); (window as any).game = x; });
+    Game.create(assets).then(x => { const output = x.container!; output.tabIndex = 1; document.body.appendChild(output); (window as any).game = x; });
 }

@@ -32,7 +32,7 @@ export abstract class HamsterTemplate implements Entity {
      */
     timer = new Timer;
 
-    image: EntityImage = {tile: "\u{1F439}", fg: "white", bg: "transparent"};
+    image: EntityImage = {tile: "ACOLYTE"};
     position = new EntityPosition(0, 0, 1);
     movement?: EntityMovement;
 
@@ -109,7 +109,7 @@ export abstract class HamsterTemplate implements Entity {
  * Floor actor
  */
 export class Floor implements Entity {
-    image: EntityImage = {tile: " ", fg: "white"};
+    image: EntityImage = {tile: "", fg: "white"};
     position: EntityPosition;
 
     constructor(x: number, y: number) {
@@ -121,7 +121,7 @@ export class Floor implements Entity {
  * Wall actor
  */
 export class Wall implements Entity {
-    image: EntityImage = {tile: "\u{1F9F1}", fg: "white"};
+    image: EntityImage = {tile: "W0", fg: "white"};
     position: EntityPosition;
     obstacle = true;
 
@@ -144,7 +144,7 @@ export abstract class MoneyTemplate implements Entity {
      */
     timer = new Timer;
 
-    image: EntityImage = {tile: "\u{1F9FB}", fg: "white"};
+    image: EntityImage = {tile: "COINS", fg: "white"};
     position: EntityPosition;
 
     constructor(x: number, y: number) {
@@ -167,7 +167,7 @@ export abstract class MoneyTemplate implements Entity {
         this.operations.add(this);
         // trigger animation
         this.timer.defer(async () => {
-            this.image.tile = "\u{1F4A8}";
+            this.image.tile = "SPIRAL";
             await this.timer.sleep(1);
             this.operations.delete(this);
             callback?.(this);
